@@ -45,9 +45,6 @@ RUN apt-get -o Acquire::ForceIPv4=true update && apt-get -yq dist-upgrade \
     libcanberra-gtk-module \
     libcanberra-gtk3-module \
     libpcap-dev \
-    python-gtk2 \
-    python-gobject \
-    python-tk \
     python3-pip \
     python3-setuptools \
     python3-opencv \
@@ -111,14 +108,12 @@ RUN pip3 install \
     catkin-tools \
     matplotlib \
     pandas \
-    pypozyx \
     requests \
     scikit-image \
     scikit-learn \
     gdown \
     seaborn \
-    pygame \
-    pyunifi
+    pygame
 
 ##################################### Robot Raconteur ################
 
