@@ -204,7 +204,7 @@ for i in idx:
 ```
 
 ## Trial Instruction:
-* ROS2 (https://github.com/eric565648/ROS_RR_turtle_trial/blob/master/ROS/src/Trial_instruction.md)
+* ROS2 (https://github.com/eric565648/robotics_middleware_trial_python_turtle_ros2/blob/main/ROS2/Trial_instruction.md)
 
 The final goal is to integrate those standalone python examples with ROS/RR, such that the python turtle will be able to drive based on what webcam sees.
 
