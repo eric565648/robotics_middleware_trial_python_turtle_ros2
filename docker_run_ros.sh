@@ -32,6 +32,7 @@ docker run \
     -e XAUTHORITY=$XAUTH \
     -e ROS_MASTER_URI=$ROS_MASTER_URI \
     -e ROS_IP=$ROS_IP \
+    -e XDG_RUNTIME_DIR="/home/rpirobotics/.docker/xrd" \
     -v "$XAUTH:$XAUTH" \
     -v "/home/$USER/robotics_middleware_trial_python_turtle_ros2:/home/rpirobotics/robotics_middleware_trial_python_turtle_ros2" \
     -v "/tmp/.X11-unix:/tmp/.X11-unix" \
