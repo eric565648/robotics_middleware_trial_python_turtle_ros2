@@ -98,4 +98,7 @@ ENTRYPOINT ["/ros_entrypoint.sh"]
 
 USER ${USER}
 
+# setup ROS2
+RUN rosdep update
+
 WORKDIR ${HOME}
