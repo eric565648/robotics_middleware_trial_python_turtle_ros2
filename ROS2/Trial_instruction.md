@@ -9,6 +9,7 @@ The goal for this trial is to create python turtle node with ROS2 service subscr
 * ROS2 action:
 * Minimal Example of Publisher/Subscriber (python):
 * Full ROS2-Foxy online tutorial: 
+* [Python Migration guide from ROS1 to ROS2](https://docs.ros.org/en/foxy/Contributing/Migration-Guide-Python.html)
 
 ## Outline
 ### Setup
