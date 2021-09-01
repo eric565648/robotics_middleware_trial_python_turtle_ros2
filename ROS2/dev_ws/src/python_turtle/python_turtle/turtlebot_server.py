@@ -4,13 +4,13 @@ from rclpy.action import ActionServer
 import math
 import time
 
+from geometry_msgs.msg import Twist, Pose
+
 from turtle_interfaces.srv import SetColor, SetPose
 from turtle_interfaces.msg import TurtleMsg
 from turtle_interfaces.action import TurtleToGoals
 
-from geometry_msgs.msg import Twist, Pose
-
-class Turtlebot_Server(Node):
+class TurtlebotServer(Node):
     def __init__(self):
         super().__init__('turtlebot_server')
 
@@ -18,7 +18,7 @@ class Turtlebot_Server(Node):
         self.turtle = TurtleMsg()
 
         # publisher of turtlebot state
-        self.turtle_pub = self.create_publisher(TurtleMsg, 'turtle_state')
+        self.turtle_pub = self.create_publisher(TurtleMsg, 'turtle_state', 1)
 
         #### service server ####
         self.turtle_color_srv = self.create_service(SetColor, 'set_turtle_color', self.set_color_callback)
@@ -29,11 +29,10 @@ class Turtlebot_Server(Node):
         self.ang_vel = 0 # angular velicty in yaw-direction (in the turtle frame), unit: rad/sec
         #### action server ####
         self.action_server = ActionServer(self, TurtleToGoals, "turtle_to_goals", self.travel_to_goals_cb)
-
         #######################
 
         #### subsciber to car cmd ####
-        self.twist_sub = self.create_subscription(Twist, 'turtle_car_cmd', self.twist_callback)
+        self.twist_sub = self.create_subscription(Twist, 'turtle_car_cmd', self.twist_callback, 1)
         self.twist_sub
         #######################
 
@@ -44,7 +43,7 @@ class Turtlebot_Server(Node):
     def set_color_callback(self, request, response):
 
         self.turtle.color = request.color
-        self.get_logger().info('Turtle color set: %s',self.turtle.color)
+        self.get_logger().info('Turtle color set: %s' % (self.turtle.color))
 
         response.ret = 1
         return response
@@ -151,7 +150,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     # initial turtlebotserver object
-    ser_obj = Turtlebot_Server()
+    ser_obj = TurtlebotServer()
     ser_obj.get_logger().info('Turtlebot server started!')
 
     # spin the node
