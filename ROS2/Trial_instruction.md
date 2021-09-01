@@ -269,12 +269,17 @@ ros2 topic list
 
 ROS2 also provide **service** communication type among nodes. Service is based on call-responde model as opposed to topic which message can flow continuously. While there can be multiple publisher publishing to a topic and multiple subsriber subscribing to that, there can be only one server hosting a ROS2 service with one or more client requesting for a service.
 
-In this checkpoint, you will write a node with a server hosting a service (to set the pose of our turtlebot), and another node as the client to request for the service (to request the set pose).
+In this checkpoint, you will write a node with a server hosting a service (to set the pose of our turtlebot), and another node as the client requesting the service (request to set pose).
 
 In contract to the previous checkpoint, you will write a node from the scratch. We will see a few new steps to allow the script being run by ROS2. But don't worry, we are here to hint and help!
 
+Note that a node can host several services with several publisher and subscirber, and even have several clients at the same time.
+
 ## Service-Server
 
-In [this section](#package) we've created a package `python_turtle`. 
+In [this section](#package) we've created a package `python_turtle`. Now, we are adding a new server script. Create a file name `turtlebot_service.py`. We first add the library to the file.
+```
+
+```
 
 ## Service-Client

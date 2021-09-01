@@ -35,9 +35,9 @@ endif()
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Turtlemsg.msg"
-  "srv/Setpose.srv"
-  "srv/Setcolor.srv"
+  "msg/TurtleMsg.msg"
+  "srv/SetPose.srv"
+  "srv/SetColor.srv"
 )
 
 ament_package()
