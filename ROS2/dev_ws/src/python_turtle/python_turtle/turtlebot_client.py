@@ -29,9 +29,9 @@ class TurtleClient(Node):
             self.get_logger().info('Color service not available, waiting...')
         self.color_req = SetColor.Request()
         
-        self.interval_srv = 8 #change color every 8 sec
         self.color_i = 0
-        self.create_timer(self.interval_srv, self.color_srvcall)
+        # self.interval_srv = 8 #change color every 8 sec
+        # self.create_timer(self.interval_srv, self.color_srvcall)
         self.server_call = False
         #################################
 
@@ -64,8 +64,8 @@ class TurtleClient(Node):
         goal_msg = TurtleToGoals.Goal()
         for i in range(5):
             goal = Pose()
-            goal.position.x = random.randint(-1*self.screen.window_width/2+20,self.screen.window_width/2-20)
-            goal.position.y = random.randint(-1*self.screen.window_height/2+20,self.screen.window_height/2-20)
+            goal.position.x = float(random.randint(-1*self.screen.window_width()/2+20,self.screen.window_width()/2-20))
+            goal.position.y = float(random.randint(-1*self.screen.window_height()/2+20,self.screen.window_height()/2-20))
 
             qx, qy, qz, qw = quat_from_rpy(0, 0, (random.random()-0.5)*math.pi)
             goal.orientation.x = qx

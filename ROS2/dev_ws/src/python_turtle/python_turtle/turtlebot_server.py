@@ -37,7 +37,7 @@ class TurtlebotServer(Node):
         #######################
 
         #### Driving Simulation Timer ####
-        self.sim_interval = 0.01
+        self.sim_interval = 0.02
         self.create_timer(self.sim_interval, self.driving_timer_cb)
 
     def set_color_callback(self, request, response):
@@ -69,13 +69,14 @@ class TurtlebotServer(Node):
             goal_handle.publish_feedback(feedback_msg)
 
             self.turtle.turtle_pose = goal
+            self.turtle_pub.publish(self.turtle)
             time.sleep(2)
 
         goal_handle.succeed()
 
         result = TurtleToGoals.Result()
         result.ret = 1
-        return 1
+        return result
 
     def twist_callback(self, msg):
 
@@ -100,7 +101,7 @@ class TurtlebotServer(Node):
         self.turtle.turtle_pose.position.y = new_y
         
         # convert to qauternion
-        qx, qy, qz, qw = quat_from_rpy(0, 0, yaw)
+        qx, qy, qz, qw = quat_from_rpy(0, 0, new_yaw)
         self.turtle.turtle_pose.orientation.x = qx
         self.turtle.turtle_pose.orientation.y = qy
         self.turtle.turtle_pose.orientation.z = qz
