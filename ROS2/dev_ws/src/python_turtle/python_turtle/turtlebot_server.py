@@ -6,33 +6,32 @@ import time
 
 from geometry_msgs.msg import Twist, Pose
 
-from turtle_interfaces.srv import SetColor, SetPose
+from turtle_interfaces.srv import SetColor
 from turtle_interfaces.msg import TurtleMsg
 from turtle_interfaces.action import TurtleToGoals
 
 class TurtlebotServer(Node):
     def __init__(self):
-        super().__init__('turtlebot_server')
+        super().__init__(<node name>)
 
         # initialize a turtle
         self.turtle = TurtleMsg()
 
         # publisher of turtlebot state
-        self.turtle_pub = self.create_publisher(TurtleMsg, 'turtle_state', 1)
+        self.turtle_pub = self.create_publisher(<turtle message topic type>, <topic name>, 1)
 
         #### service server ####
-        self.turtle_color_srv = self.create_service(SetColor, 'set_turtle_color', self.set_color_callback)
-        self.turtle_pose_srv = self.create_service(SetPose, 'set_turtle_pose', self.set_pose_callback)
+        # self.turtle_color_srv = self.create_service(<service type>, <service name>, <service callback function>)
         ########################
 
         self.vel_x = 0 # velocty in x-direction (in the turtle frame), unit: pix/sec
         self.ang_vel = 0 # angular velicty in yaw-direction (in the turtle frame), unit: rad/sec
         #### action server ####
-        self.action_server = ActionServer(self, TurtleToGoals, "turtle_to_goals", self.travel_to_goals_cb)
+        # self.action_server = ActionServer(self, <action type>, <action type>, <action callback>)
         #######################
 
         #### subsciber to car cmd ####
-        self.twist_sub = self.create_subscription(Twist, 'turtle_car_cmd', self.twist_callback, 1)
+        self.twist_sub = self.create_subscription(<car command topic type>, <car command topic name>, <car command callback>, 1)
         self.twist_sub
         #######################
 
@@ -40,48 +39,40 @@ class TurtlebotServer(Node):
         self.sim_interval = 0.02
         self.create_timer(self.sim_interval, self.driving_timer_cb)
 
-    def set_color_callback(self, request, response):
+    # def set_color_callback(self, request, response):
 
-        self.turtle.color = request.color
-        self.get_logger().info('Turtle color set: %s' % (self.turtle.color))
+    #     self.turtle.color = request.color
+    #     self.get_logger().info('Turtle color set: %s' % (self.turtle.color))
 
-        response.ret = 1
-        return response
+    #     response.ret = 1
+    #     return response
     
-    def set_pose_callback(self, request, response):
+    # def travel_to_goals_cb(self, goal_handle):
+    #     self.get_logger().info('To goals')
 
-        self.turtle.turtle_pose = request.set_pose
-        self.get_logger().info('Turtle set to new pose')
+    #     self.vel_x = 0
+    #     self.ang_vel = 0
 
-        response.ret = 1
-        return response
-    
-    def travel_to_goals_cb(self, goal_handle):
-        self.get_logger().info('To goals')
+    #     feedback_msg = TurtleToGoals.Feedback()
 
-        self.vel_x = 0
-        self.ang_vel = 0
+    #     for goal in goal_handle.request.goal_poses:
+    #         feedback_msg.mid_goal_pose = goal
+    #         goal_handle.publish_feedback(feedback_msg)
 
-        feedback_msg = TurtleToGoals.Feedback()
+    #         self.turtle.turtle_pose = goal
+    #         self.turtle_pub.publish(self.turtle)
+    #         time.sleep(2)
 
-        for goal in goal_handle.request.goal_poses:
-            feedback_msg.mid_goal_pose = goal
-            goal_handle.publish_feedback(feedback_msg)
+    #     goal_handle.succeed()
 
-            self.turtle.turtle_pose = goal
-            self.turtle_pub.publish(self.turtle)
-            time.sleep(2)
-
-        goal_handle.succeed()
-
-        result = TurtleToGoals.Result()
-        result.ret = 1
-        return result
+    #     result = TurtleToGoals.Result()
+    #     result.ret = 1
+    #     return result
 
     def twist_callback(self, msg):
 
-        self.vel_x = msg.linear.x
-        self.ang_vel = msg.angular.z
+        self.vel_x = <decode message>
+        self.ang_vel = <decode message>
 
     def driving_timer_cb(self):
 
@@ -92,9 +83,9 @@ class TurtlebotServer(Node):
                                         self.turtle.turtle_pose.orientation.w)
 
         # basic position/velocity physics
-        new_x = self.turtle.turtle_pose.position.x + math.cos(yaw)*self.vel_x*self.sim_interval
-        new_y = self.turtle.turtle_pose.position.y + math.sin(yaw)*self.vel_x*self.sim_interval
-        new_yaw = yaw + self.ang_vel*self.sim_interval
+        new_x = <old_x + vel*time_interval*cos(turtle angle)>
+        new_y = <old_y + vel*time_interval*sin(turtle angle)>
+        new_yaw = <old_ang + ang_vel*time_interval>
 
         # assign to the turtle obj
         self.turtle.turtle_pose.position.x = new_x
