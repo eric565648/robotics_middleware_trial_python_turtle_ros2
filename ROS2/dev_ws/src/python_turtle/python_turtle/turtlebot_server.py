@@ -1,11 +1,14 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.action import ActionServer
 import math
+import time
 
 from turtle_interfaces.srv import SetColor, SetPose
 from turtle_interfaces.msg import TurtleMsg
+from turtle_interfaces.action import TurtleToGoals
 
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Pose
 
 class Turtlebot_Server(Node):
     def __init__(self):
@@ -25,6 +28,7 @@ class Turtlebot_Server(Node):
         self.vel_x = 0 # velocty in x-direction (in the turtle frame), unit: pix/sec
         self.ang_vel = 0 # angular velicty in yaw-direction (in the turtle frame), unit: rad/sec
         #### action server ####
+        self.action_server = ActionServer(self, TurtleToGoals, "turtle_to_goals", self.travel_to_goals_cb)
 
         #######################
 
@@ -52,6 +56,27 @@ class Turtlebot_Server(Node):
 
         response.ret = 1
         return response
+    
+    def travel_to_goals_cb(self, goal_handle):
+        self.get_logger().info('To goals')
+
+        self.vel_x = 0
+        self.ang_vel = 0
+
+        feedback_msg = TurtleToGoals.Feedback()
+
+        for goal in goal_handle.request.goal_poses:
+            feedback_msg.mid_goal_pose = goal
+            goal_handle.publish_feedback(feedback_msg)
+
+            self.turtle.turtle_pose = goal
+            time.sleep(2)
+
+        goal_handle.succeed()
+
+        result = TurtleToGoals.Result()
+        result.ret = 1
+        return 1
 
     def twist_callback(self, msg):
 
