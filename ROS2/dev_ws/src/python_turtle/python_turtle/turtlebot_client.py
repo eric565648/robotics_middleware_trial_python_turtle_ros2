@@ -30,8 +30,6 @@ class TurtleClient(Node):
         self.color_req = SetColor.Request()
         
         self.color_i = 0
-        # self.interval_srv = 8 #change color every 8 sec
-        # self.create_timer(self.interval_srv, self.color_srvcall)
         self.server_call = False
         #################################
 
