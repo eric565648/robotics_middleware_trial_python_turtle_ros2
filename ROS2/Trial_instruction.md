@@ -452,22 +452,119 @@ The final goal is to drive turtlebot by showing different colors.
 * **Checkpoint 5**
 Given `Example/detection_red.py` or `Example/detection_red_hsv.py` (They use different color space. One uses RGB and one uses [HSV](https://programmingdesignsystems.com/color/color-models-and-color-spaces/)). Please drive the turtlebot forward while seeing `Red`, backward while seeing `Blue`, turning while seeing `Yellow`. 
 
-# ROS2 Service (Server-Client)
-**Starting Point of Checkpoint 3**
+# ROS2 Advance
+Here, we will lead you to the survey on how to use ROS2 service and action.
+
+## ROS2 Service (Server-Client)
+**Starting Point of Checkpoint 6**
 
 ROS2 also provide **service** communication type among nodes. Service is based on call-responde model as opposed to topic which message can flow continuously. While there can be multiple publisher publishing to a topic and multiple subsriber subscribing to that, there can be only one server hosting a ROS2 service with one or more client requesting for a service.
 
-In this checkpoint, you will write a node with a server hosting a service (to set the pose of our turtlebot), and another node as the client requesting the service (request to set pose).
-
-In contract to the previous checkpoint, you will write a node from the scratch. We will see a few new steps to allow the script being run by ROS2. But don't worry, we are here to hint and help!
+In this checkpoint, we will continue using `turtle_server.py` as the server script. We will write another node as the client requesting the service (request to set color).
 
 Note that a node can host several services with several publisher and subscirber, and even have several clients at the same time.
 
 ## Service-Server
 
-In [this section](#package) we've created a package `python_turtle`. Now, we are adding a new server script. Create a file name `turtlebot_service.py`. We first add the library to the file.
+Open your `turtlebot_server.py` and let's start adding service server. The service here provided to change the color of our turtle. Please uncomment the following line and fill up the service type, service name and service callback function. Remind that we have create our customize service type in this [section](#service-types)
+```
+self.turtle_color_srv = self.create_service(<service type>, <service name>, <service callback function>)
 ```
 
+Then we still have to add callback function so when a service is called, the function will do something and return. Please uncomment this function.
 ```
+def set_color_callback(self, request, response):
+
+    self.turtle.color = request.color
+    self.get_logger().info('Turtle color set: %s' % (self.turtle.color))
+
+    response.ret = 1
+    return response
+```
+
+The function is pretty straightforward also. It set the color from the request message, then return a respond. The server of the service is now all set!
 
 ## Service-Client
+
+Please copy the file `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/service_client.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/service_client.py`. It share a similar code structure as `turtlebot_client.py` Let's see the main function.
+
+After initialize ROS2 and the object. The object call the service through the function `cli_obj.color_srvcall()`. Once the function was called, it enters a while loop and waits for the service to be done. When the `future` is `done`, it shows the repsond and break out the loop. The scripts then end. Note that the script is meant to execute only once, it's not necessary to end the script when the service call has completed.
+```
+def main(args=None):
+
+    #initial ROS2
+    rclpy.init(args=args)
+
+    #initial turtle client
+    cli_obj = TurtleClient()
+    cli_obj.get_logger().info('Turtlebot Client Started!')
+    
+    # call the service
+    cli_obj.color_srvcall()
+
+    while rclpy.ok():
+        rclpy.spin_once(cli_obj)
+
+        if cli_obj.service_future.done() and cli_obj.server_call:
+            cli_obj.server_call = False
+            try:
+                response = cli_obj.service_future.result()
+            except Exception as e:
+                cli_obj.get_logger().info('Server call failed')
+            else:
+                cli_obj.get_logger().info('Server call success: %d' % (response.ret))
+                break
+```
+
+In the constructor of the object class, the client of the service is created and waiting for the server of the service is online. Although it's not necessary, it's sometime safe to do so. Please fill up the type and the name of the service. Remind that it should match the ones in the `turtlebot_server.py`
+```
+def __init__(self):
+    super().__init__('service_client')
+
+    #### Color service client ####
+    self.color_cli = self.create_client(<service type>, <service name>)
+    while not self.color_cli.wait_for_service(timeout_sec=1.0):
+        self.get_logger().info('Color service not available, waiting...')
+    self.color_req = SetColor.Request()
+
+    self.server_call = False
+    #################################
+```
+
+Finally, the service call function, this function define a color and call the service. Please note that the service is called *asynchornizely*. It's highly recommend by the official ROS2 website.
+```
+def color_srvcall(self):
+
+    col = 'cyan'
+    
+    self.color_req.color = col
+    self.server_call = True
+    self.service_future = self.color_cli.call_async(self.color_req)
+```
+
+## Dependencies and Entry Point and Build
+
+Remeber to add dependencies, entry point and build your package!!!!
+
+As we have already add dependencies in the previous chapter, we only need to add entry point in `setup.py` here. Please add the following line
+```
+'service_client = python_turtle.service_client:main',
+```
+
+Finally, build the workspace as we have mentioned in [this section](#build-the-workspace-and-packages). You have to build the workspace **even you only make changes in python scripts**
+
+* **Checkpoint 6**:
+
+Run the server script and client scripts. Open two terminals. In one terminal, source the workspace and run the following
+```
+$ ros2 run python_turtle turtle_server
+```
+Another terminal
+```
+$ ros2 run python_turtle service_client
+```
+
+You should see in the terminal saying the color has changed to cyan.
+
+## ROS2 Action (Server-Client)
+**Starting Point of Checkpoint 7**

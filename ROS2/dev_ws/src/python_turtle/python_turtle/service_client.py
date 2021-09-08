@@ -8,7 +8,7 @@ class TurtleClient(Node):
         super().__init__('service_client')
 
         #### Color service client ####
-        self.color_cli = self.create_client(SetColor, 'set_turtle_color')
+        self.color_cli = self.create_client(<service type>, <service name>)
         while not self.color_cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Color service not available, waiting...')
         self.color_req = SetColor.Request()
@@ -23,9 +23,6 @@ class TurtleClient(Node):
         self.color_req.color = col
         self.server_call = True
         self.service_future = self.color_cli.call_async(self.color_req)
-
-        self.color_i += 1
-        self.color_i %= 5
 
 def main(args=None):
 
