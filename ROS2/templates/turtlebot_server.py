@@ -26,6 +26,7 @@ class TurtlebotServer(Node):
 
         self.vel_x = 0 # velocty in x-direction (in the turtle frame), unit: pix/sec
         self.ang_vel = 0 # angular velicty in yaw-direction (in the turtle frame), unit: rad/sec
+        
         #### action server ####
         # self.action_server = ActionServer(self, <action type>, <action type>, <action callback>)
         #######################

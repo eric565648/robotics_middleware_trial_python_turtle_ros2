@@ -20,8 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'turtlebot_server = python_turtle.turtlebot_server:main',
-            'turtlebot_client = python_turtle.turtlebot_client:main',
+            # 'turtlebot_server = python_turtle.turtlebot_server:main',
+            # 'turtlebot_client = python_turtle.turtlebot_client:main',
         ],
     },
 )

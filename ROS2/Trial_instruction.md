@@ -167,8 +167,8 @@ Topics are buses between nodes. Nodes utilize **publisher** and **subscribers** 
 
 Quick note, the ROS2 is mode object-oriented than ROS1. 
 
-### Publisher
-Let's take a look at the code of the publisher node. Please see the file `webcam/cam_pub.py` in the `webcam` package folder (`~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/webcam`). Note that instead of `src` folder, we put python scripts in the folder with the same name as the package in python-type package in ROS2. However, for the C++-type folder, we put it in `src` folder as we did in ROS1.
+## Publisher
+Let's take a look at the code of the publisher node. Please see the file `webcam/cam_pub.py` in the `webcam` package folder (`~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/webcam`). Note that instead of `src` folder, we put python scripts in the folder with **the same name as the package** in python-type package in ROS2. However, for the C++-type folder, we put it in `src` folder as we did in ROS1.
 
 First, we include the necessary python libraries as we always did. The library for ROS2 in python is `rclpy`.
 ```
@@ -205,7 +205,7 @@ rval,img_data = self.camera.read()
       return img_data 
 ```
 
-### Subscriber
+## Subscriber
 Now, let us see `webcam/cam_sub.py` in `webcam` package.
 
 First, we inistializa ROS and the object and spin it as we did in the pubisher script.
@@ -245,7 +245,7 @@ Open two terminal and run the publisher and subscriber nodes in one in each usin
 ```
 ros2 run <package_name> <node_name>
 ```
-`<package_name>` here is obviously `webcam`. However, the `<node_name>` is not necessary the name of the script. We will explore that in the next checkpoint. You should see a window pop up and show whatever capture by your webcam.
+`<package_name>` here is obviously `webcam`. However, the `<node_name>` is not necessary the name of the script. Here it's `webcam_pub` and `webcam_sub`. We will explore that in the next checkpoint. You should see a window pop up and show whatever capture by your webcam.
 
 From time to time, we are not able to examine if the message publish successfully in such clear way. Luckily, ROS2 provide a series of tool to help us with that (like in ROS1). Run the following in a new terminal. (Also remeber to setup your workspace.)
 ```
@@ -263,6 +263,194 @@ If you would like to see all topics, use the following command
 ```
 ros2 topic list
 ```
+
+# Turtlebot Server-Client
+**Starting Point of Checkpoint 3**
+
+Now you know the basic ROS2 node, publish and subscription concept and usage and the details to be aware of. We are going to write two python scripts with one as a ROS2 node. A node will be *server* which host the state of the turtle bot, update the (2D) pose (i.e. x, y position and yaw). Another node will be the client which give car commmands and visualize the robot.
+
+## Turtlebot Server
+
+Let's start with the server script. Don't worry, we have prepared a template for you. Please copy `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/turtlebot_server.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/turtlebot_server.py`. As mentioned in the previous section, python scripts should be put in the folder **with the same name** as the package.
+
+In the `def main()` function, we have initialize ROS2 and the object for you. Remeber to spin the object otherwise the script will only be execute once.
+```
+#initial ros2
+rclpy.init(args=args)
+
+# initial turtlebotserver object
+ser_obj = TurtlebotServer()
+ser_obj.get_logger().info('Turtlebot server started!')
+
+# spin the node
+rclpy.spin(ser_obj)
+```
+
+Let's see the constrctor of the object class. You can notice the class inheret a ROS2 Node class. Please name your node here. Replact the whole <> with the name of the node. The name should be a string so remeber it should be 'name_of_node'
+```
+class TurtlebotServer(Node):
+    def __init__(self):
+        super().__init__(<node name>)
+```
+
+Then, we initialize a varaible hosting the state of the turtlebot using the data type of TurtleMsg that we create in the previous section. We also have two variable hosting velocity `self.vel_x` and augular velocity `self.ang_z`. Beside variables, we declare a publisher and a subscriber. Please fill up the topic name, topic type and callback function. (One topic type should be TurtleMsg and another Twist. Figure that out!) Finally, there's a timer simulating the real world driving which callback the function every `self.sim_interval`. You might see other stuff in the scipt which were commended out. Don't worry, we will use those in the later chapter.
+```
+# initialize a turtle
+self.turtle = TurtleMsg()
+
+# publisher of turtlebot state
+self.turtle_pub = self.create_publisher(<turtle message topic type>, <topic name>, 1)
+
+self.vel_x = 0 # velocty in x-direction (in the turtle frame), unit: pix/sec
+self.ang_vel = 0 # angular velicty in yaw-direction (in the turtle frame), unit: rad/sec
+
+#### subsciber to car cmd ####
+self.twist_sub = self.create_subscription(<car command topic type>, <car command topic name>, <car command callback>, 1)
+self.twist_sub
+#######################
+
+#### Driving Simulation Timer ####
+self.sim_interval = 0.02
+self.create_timer(self.sim_interval, self.driving_timer_cb)
+``` 
+
+Let's see the callback functions of subscriber. The function decode the message and store the info in the variable. Please refer to this [website](http://docs.ros.org/en/noetic/api/geometry_msgs/html/msg/Twist.html) to see how to decode the message. Remeber the callback msg has datatype `Twist` (Hint: `self.vel_x = msg.linear.x` Figuer out another one yourself!)
+```
+def twist_callback(self, msg):
+
+  self.vel_x = <decode message>
+  self.ang_vel = <decode message>
+```
+
+Finally the callback function of the timer. Since the orientation of ROS2 (and also ROS1) used quaternion as the representation, we have to transfer quaternion to euler angles and tranfer back after processing. We do all that for you, still it's good to take a look and put that in mind. The main thing we have to do here is to integrate the velocity and add it to the old pose so that we can know the new pose. Please rember the time interval was declare in the constructor (i.e. `self.sim_interval`).
+```
+def driving_timer_cb(self):
+    # basic position/velocity physics
+    new_x = <old_x + vel*time_interval*cos(turtle angle)>
+    new_y = <old_y + vel*time_interval*sin(turtle angle)>
+    new_yaw = <old_ang + ang_vel*time_interval>
+
+    # assign to the turtle obj
+    self.turtle.turtle_pose.position.x = new_x
+    self.turtle.turtle_pose.position.y = new_y
+
+    # publish new turtle state
+    self.turtle_pub.publish(self.turtle)
+```
+
+## Turtle Client
+
+We have finished `turtle_server.py`. Let's move on to turtle client. Please copy the file `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/turtlebot_client.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/turtlebot_client.py`. And let's see the main function!.
+
+As we did in `turtle_server.py`, we also initialize ROS2 and a object for the node. The difference is that instead of `rclpy.spin('the object')`, we have a while loop here with a `rclpy.spin_once('the object')`. You can see these two as equivelent but we can add some steps here before and after each spin. The while loop first call the update function of the object, then spin the object node. Finally using the publisher of the object to publish a Twist message. You can see the twist has linear velocity in x-direction and angular velocity in z-direction. (Think about the callback function in `turtle_server.py`). We can guess that the motion of the turtlebot might be a circle if the twist does not change during the time. Please put the unit of linear and angular velocity you like. Depends on the amount and ratio between them, the turtle might move quicker or slower, the circle might get larger or smaller.
+```
+def main(args=None):
+
+    #initial ROS2
+    rclpy.init(args=args)
+
+    #initial turtle client
+    cli_obj = TurtleClient()
+    cli_obj.get_logger().info('Turtlebot Client Started!')
+        
+    while rclpy.ok():
+    
+        cli_obj.update()
+        rclpy.spin_once(cli_obj)
+
+        unit_x = <put how many unit you like>
+        unit_z = <put how many unit you like>
+        
+        #### publish twist ####
+        cmd_msg = Twist()
+        cmd_msg.linear.x = float(50 * unit_x)
+        cmd_msg.angular.z = float(1 * unit_z)
+        cli_obj.twist_pub.publish(cmd_msg)
+```
+
+Still, we have to take care of the class definition. We also first name the node in the constructor. 
+```
+def __init__(self):
+    super().__init__(<node name>)
+```
+
+Then we setup the display with python `turtle` library. Last, we declare publisher and subsriber. Please also put the topic name, topic type, and callback function here. Remind that the topic namd and topic type should match with the once in `turtle_server.py`
+```
+#### publisher define ####
+self.twist_pub = self.create_publisher(<car command topic type>, <car command topic name>, 1)
+##########################
+
+#### subsribing turtlebot state ####
+self.turtle_sub = self.create_subscription(<turtle message topic type>, <topic name>, <turtle callback function>, 1)
+```
+
+We then take a look at the callback function of subsriber. As easy as in `turtle_server.py`, the function merely store the message into the variable. Remind that the variable is for storing the turtle state so that we can visualize it later. The datatype of both message and the variable is `TurtleMsg`.
+```
+def turtle_callback(self, msg):
+    self.turtle = msg
+```
+
+Last, the `update` function, we found it call every time in the while loop. The function first change the color of the turtle (i.e. the pen). Then set the position of the robot. Please fill the x and y coordinate here. (Hint: the x-coordinate should be `self.turtle.pose.position.x`, figure y-coordinate out!). Finally tranfer the angle from quaternion to eualer angle and set the angle.
+```
+def update(self):
+
+    if self.turtle.color is 'None':
+        self.turtle_display.penup()
+    else:
+        self.turtle_display.pencolor(self.turtle.color)
+
+    self.turtle_display.setpos(<x coordinate>, <y coordinate>)
+    
+    roll, pitch, yaw = rpy_from_quat(self.turtle.turtle_pose.orientation.x,
+                                    self.turtle.turtle_pose.orientation.y,
+                                    self.turtle.turtle_pose.orientation.z,
+                                    self.turtle.turtle_pose.orientation.w)
+    self.turtle_display.seth(math.degrees(yaw))
+```
+
+## Dependencies and Entry Point and Build
+
+Wait! Although the scripts are done. We haven't ready yet. Since we have added new scripts in the package. We need to add dependencies, entry points and build the packages. These are the steps easily to be forgotten. If you ever encounter problems, please think if you have done these steps properly.
+
+Please open the `package.xml` first and uncommended the following line. These two lines add dependencies to the package.
+```
+<depend>rclpy</depend>
+<depend>turtle_interfaces</depend>
+```
+
+Open `setup.py` and uncommended the following two lines. These two lines gives the entry points to the scripts. The `turtlebot_server` and `turtlebot_client` is the `<node_name>` when we use the command `ros2 run <package_name> <node_name>`.
+```
+'turtlebot_server = python_turtle.turtlebot_server:main',
+'turtlebot_client = python_turtle.turtlebot_client:main',
+```
+
+Finally, build the workspace as we have mentioned in [this section](#build-the-workspace-and-packages). You have to build the workspace **even you only make changes in python scripts**
+
+* **Checkpoint 3**:
+
+Run the server script and client scripts. Open two terminals. In one terminal, source the workspace and run the following
+```
+$ ros2 run python_turtle turtle_server
+```
+Another terminal
+```
+$ ros2 run python_turtle turtle_client
+```
+
+You should see a turtlebot circling!
+
+# Task
+## 1
+Now you know all the basic to use ROS2! Here are some little challenges for you! For the task 1, given `Examples/keyboard.py`, please create a scripts that allows moving turtlebot through reading from the keyboard.
+
+* **Checkpoint 4**
+Write a script that allows driving turtlebot with arrow keys. Hint: You can use most of the part in `turtle_client.py`. Try imitate the scructure of the code before you are familiar with ROS2!
+
+## 2
+The final goal is to drive turtlebot by showing different colors. 
+
+* **Checkpoint 5**
+Given `Example/detection_red.py` or `Example/detection_red_hsv.py` (They use different color space. One uses RGB and one uses [HSV](https://programmingdesignsystems.com/color/color-models-and-color-spaces/)). Please drive the turtlebot forward while seeing `Red`, backward while seeing `Blue`, turning while seeing `Yellow`. 
 
 # ROS2 Service (Server-Client)
 **Starting Point of Checkpoint 3**
