@@ -4,32 +4,46 @@ The goal for this trial is to create python turtle node with ROS2 service subscr
 **Please time yourself for each checkpoint**
 
 ## ROS2 Resources:
-* ROS2 message:
-* ROS2 service:
-* ROS2 action:
-* Minimal Example of Publisher/Subscriber (python):
-* Full ROS2-Foxy online tutorial: 
+* [ROS2 topic](https://docs.ros.org/en/foxy/Tutorials/Topics/Understanding-ROS2-Topics.html)
+* [ROS2 service](https://docs.ros.org/en/foxy/Tutorials/Services/Understanding-ROS2-Services.html)
+* [ROS2 action](https://docs.ros.org/en/foxy/Tutorials/Understanding-ROS2-Actions.html)
+* Minimal Example of [Publisher/Subscriber (python)](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Py-Publisher-And-Subscriber.html)
+* Full ROS2-Foxy online [tutorial](https://docs.ros.org/en/foxy/Tutorials.html)
 * [Python Migration guide from ROS1 to ROS2](https://docs.ros.org/en/foxy/Contributing/Migration-Guide-Python.html)
 
 ## Outline
 ### Setup
-* [Catkin Workspace](#catkin-workspace)
+* [Workspace](#workspace)
 * [Package](#package)
 * [Message Types](#message-types)
 * [Service Types](#service-types)
-* [Build Workspace](#build-workspace)
-### ROS2 Publisher
-### ROS2 Subscriber
-* [Create Turtlebot Server](#create-turtlebot-server)
-* [Create Turtlebot Client](#create-turtlebot-client)
-### ROS2 Action
+* [Build Workspace](#build-the-workspace-and-packages)
+### ROS2 Topic (Publisher-Subscriber)
+* [Publisher](#publisher)
+* [Subscriber](#subscriber)
+### Turtlebot Server-Client
+* [Turtlebot Server](#turtlebot-server)
+* [Turtlebot Client](#turtlebot-client)
+### Task
+* [Task-1](#task-1)
+* [Task-2](#task-2)
+### ROS2 Service (Server-Client)
+* [Service-Server](#service-server)
+* [Service-Client](#service-client)
+### ROS2 Action (Server-Client)
+* [Action Type](#action-type)
+* [Action-Server](#action-server)
+* [Action-Client](#action-client)
+### Task
+* [Task-3](#task-3)
 
-# Setup
+
+## Setup
 **Starting Point of Checkpoint 1**
-## Workspace
+### Workspace
 For each ROS2 project, there's a dedicated workspace. Unlike in ROS1 we use `catkin`, in ROS2 we use `colcon` to build our workspace. The workspace here is `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws` which is already created.
 
-## Package
+### Package
 Like ROS1 (and unlike RobotRaconteur), ROS2 requires the workspace to build content. All package should be in `workspace/src` folder. In this repository there's already a webcam package (`~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/webcam`), so you'll need to [create another package](https://docs.ros.org/en/foxy/Tutorials/Creating-Your-First-ROS2-Package.html) for python turtle.
 
 ```
@@ -42,7 +56,7 @@ This creates a new package `python_turtle` under `~/robotics_middleware_trial_py
 Unlike ROS1, `python` and `C++` uses in different types of package. For `python` use `ament_python` and for `C++` use `ament_cmake`. However, it's possible to build the package with `ament_cmake_python` which both language can be used in the package.
 There are also minor different touches for these two language. In this trial, we use `python`.
 
-## Message Types
+### Message Type
 ROS2 shares the same pre-defined message types (e.g. std_msgs, sensor_msgs) with ROS1 which users can include. Furthermore, ROS2 allows customized [message types and service types](https://docs.ros.org/en/foxy/Tutorials/Custom-ROS2-Interfaces.html). Remeber customized messages and only be defined and build in `ament_cmake` type of package (but of course can be used across all other packages.)
 
 Let's create our own message type `turtle_msg`! We first create a new package `turtle_interfaces`.
@@ -93,7 +107,7 @@ turtle_msg.turtle_pose=Pose()
 turtle_msg.color="red"
 ```
 
-## Service Type
+### Service Type
 A ROS2 service is similar to a function call, and in the task we'll ask you to create a `setpose` and `setcolor`. ROS2 also shares the same pre-defined service types with ROS1 which users can include.
 
 Please create a folder `srv` in the folder `turtle_interfaces` and create two files named `Setpose.srv` and `Setcolor.srv`. Copy-paste the following content to the file.
@@ -127,7 +141,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 We'll get to how to use these services and messages in the later checkpoints.
 
-## Build the Workspace and Packages
+### Build the Workspace and Packages
 We use `colcon build` to build the packages. Remeber to setup the ROS2 environment whenever a new terminal is open.
 
 ```
@@ -158,7 +172,7 @@ ros2 interface show turtle_interfaces/srv/Setcolor
 
 Please direct to [Readme](https://github.com/eric565648/robotics_middleware_trial_python_turtle_ros2) for question post.
 
-# ROS2 Topic (Publisher-Subcriber)
+## ROS2 Topic (Publisher-Subcriber)
 **Starting Point of Checkpoint 2**
 
 As ROS1, the basic element of ROS2 is **Node**. There are **three** three communication types between nodes, which are topics, services and actions. Among them, **action** is a new feature in ROS2. We will cover them all in this trial and start with topics.
@@ -167,7 +181,7 @@ Topics are buses between nodes. Nodes utilize **publisher** and **subscribers** 
 
 Quick note, the ROS2 is mode object-oriented than ROS1. 
 
-## Publisher
+### Publisher
 Let's take a look at the code of the publisher node. Please see the file `webcam/cam_pub.py` in the `webcam` package folder (`~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/webcam`). Note that instead of `src` folder, we put python scripts in the folder with **the same name as the package** in python-type package in ROS2. However, for the C++-type folder, we put it in `src` folder as we did in ROS1.
 
 First, we include the necessary python libraries as we always did. The library for ROS2 in python is `rclpy`.
@@ -205,7 +219,7 @@ rval,img_data = self.camera.read()
       return img_data 
 ```
 
-## Subscriber
+### Subscriber
 Now, let us see `webcam/cam_sub.py` in `webcam` package.
 
 First, we inistializa ROS and the object and spin it as we did in the pubisher script.
@@ -264,12 +278,12 @@ If you would like to see all topics, use the following command
 ros2 topic list
 ```
 
-# Turtlebot Server-Client
+## Turtlebot Server-Client
 **Starting Point of Checkpoint 3**
 
 Now you know the basic ROS2 node, publish and subscription concept and usage and the details to be aware of. We are going to write two python scripts with one as a ROS2 node. A node will be *server* which host the state of the turtle bot, update the (2D) pose (i.e. x, y position and yaw). Another node will be the client which give car commmands and visualize the robot.
 
-## Turtlebot Server
+### Turtlebot Server
 
 Let's start with the server script. Don't worry, we have prepared a template for you. Please copy `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/turtlebot_server.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/turtlebot_server.py`. As mentioned in the previous section, python scripts should be put in the folder **with the same name** as the package.
 
@@ -338,7 +352,7 @@ def driving_timer_cb(self):
     self.turtle_pub.publish(self.turtle)
 ```
 
-## Turtle Client
+### Turtlebot Client
 
 We have finished `turtle_server.py`. Let's move on to turtle client. Please copy the file `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/turtlebot_client.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/turtlebot_client.py`. And let's see the main function!.
 
@@ -408,7 +422,7 @@ def update(self):
     self.turtle_display.seth(math.degrees(yaw))
 ```
 
-## Dependencies and Entry Point and Build
+### Dependencies and Entry Point and Build
 
 Wait! Although the scripts are done. We haven't ready yet. Since we have added new scripts in the package. We need to add dependencies, entry points and build the packages. These are the steps easily to be forgotten. If you ever encounter problems, please think if you have done these steps properly.
 
@@ -439,20 +453,20 @@ $ ros2 run python_turtle turtle_client
 
 You should see a turtlebot circling!
 
-# Task
-## 1
+## Task
+### Task-1
 Now you know all the basic to use ROS2! Here are some little challenges for you! For the task 1, given `Examples/keyboard.py`, please create a scripts that allows moving turtlebot through reading from the keyboard.
 
 * **Checkpoint 4**
 Write a script that allows driving turtlebot with arrow keys. Hint: You can use most of the part in `turtle_client.py`. Try imitate the scructure of the code before you are familiar with ROS2!
 
-## 2
+### Task-2
 The final goal is to drive turtlebot by showing different colors. 
 
 * **Checkpoint 5**
 Given `Example/detection_red.py` or `Example/detection_red_hsv.py` (They use different color space. One uses RGB and one uses [HSV](https://programmingdesignsystems.com/color/color-models-and-color-spaces/)). Please drive the turtlebot forward while seeing `Red`, backward while seeing `Blue`, turning while seeing `Yellow`. 
 
-# ROS2 Advance
+## ROS2 Advance Survey
 Here, we will lead you to the survey on how to use ROS2 service and action.
 
 ## ROS2 Service (Server-Client)
@@ -464,7 +478,7 @@ In this checkpoint, we will continue using `turtle_server.py` as the server scri
 
 Note that a node can host several services with several publisher and subscirber, and even have several clients at the same time.
 
-## Service-Server
+### Service-Server
 
 Open your `turtlebot_server.py` and let's start adding service server. The service here provided to change the color of our turtle. Please uncomment the following line and fill up the service type, service name and service callback function. Remind that we have create our customize service type in this [section](#service-types)
 ```
@@ -484,7 +498,7 @@ def set_color_callback(self, request, response):
 
 The function is pretty straightforward also. It set the color from the request message, then return a respond. The server of the service is now all set!
 
-## Service-Client
+### Service-Client
 
 Please copy the file `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/service_client.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/service_client.py`. It share a similar code structure as `turtlebot_client.py` Let's see the main function.
 
@@ -542,7 +556,7 @@ def color_srvcall(self):
     self.service_future = self.color_cli.call_async(self.color_req)
 ```
 
-## Dependencies and Entry Point and Build
+### Dependencies and Entry Point and Build
 
 Remeber to add dependencies, entry point and build your package!!!!
 
@@ -573,7 +587,7 @@ You should see in the terminal saying the color has changed to cyan.
 
 In this part, you will first create a action interface which is very much like what we've done in [the previous section](#service-type). We will then add server to our `turtlebot_server.py` and create a script to add the client. The action is the robot travelling to several designated goal. The client send multiple goal pose to the server and the server tell the client which goal is the robot currently heading to and if the action success after all.
 
-## Action Type
+### Action Type
 
 First create a folder name `action` in the package `turtle_interfaces`. Create a file name `TurtleToGoals.action` and copy the follow content to the file. The first part of the content is the goal of the action sent from the client to the server. The second part is the result sent from the server to the client after the action. The third part is the feedback message type which is also sent from the server to the client.
 ```
@@ -598,7 +612,7 @@ Great that all! Now build the workspace as we did [before](#build-the-workspace-
 ros2 interface show turtle_interface/action/TurtleToGoal
 ``` 
 
-## Action-Server
+### Action-Server
 
 Please open the file `turtlebot_server.py`. As this point we are very familiar to the structure of the code. Let's head to the constructor and see how we add a action server. Please uncomment the following line. You can see that the object initialization is slightly different as we did for service, however, it's still quite straightforward. Please add action type (which we just created), action name and action callback. 
 ```
@@ -632,7 +646,7 @@ def travel_to_goals_cb(self, goal_handle):
     return result
 ```
 
-## Action-Client
+### Action-Client
 
 Please copy the file `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/action_client.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/action_client.py`. It share a similar code structure as `server_client.py`. The main function pretty much to the same thing (i.e. create node object, call the action, call rclpy.spin). Let's head to the constructor of the class.
 
@@ -691,7 +705,7 @@ def goal_feedback_cb(self, feedback_msg):
     self.get_logger().info('Traveling to x:%d, y:%d' % (mid_goal.position.x, mid_goal.position.y))
 ```
 
-## Dependencies and Entry Point and Build
+### Dependencies and Entry Point and Build
 
 Remeber to add dependencies, entry point and build your package!!!!
 
@@ -715,8 +729,8 @@ $ ros2 run python_turtle service_client
 
 You should see in the terminal that it's traveling to different goal pose.
 
-# Task
-## 3
+## Task
+### Task-3
 
 **Checkpoint 8**
 
