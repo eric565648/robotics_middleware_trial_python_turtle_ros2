@@ -28,7 +28,7 @@ class TurtlebotServer(Node):
         self.ang_vel = 0 # angular velicty in yaw-direction (in the turtle frame), unit: rad/sec
         
         #### action server ####
-        # self.action_server = ActionServer(self, <action type>, <action type>, <action callback>)
+        # self.action_server = ActionServer(self, <action type>, <action name>, <action callback>)
         #######################
 
         #### subsciber to car cmd ####

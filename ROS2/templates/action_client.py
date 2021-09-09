@@ -14,8 +14,8 @@ class TurtleClient(Node):
         super().__init__('turtlebot_client')
 
         #### Action client ####
-        self.action_cli = ActionClient(self, TurtleToGoals, 'turtle_to_goals')
-        while not self.color_cli.wait_for_service(timeout_sec=1.0):
+        self.action_cli = ActionClient(self, <action type>, <action name>)
+        while not self.action_cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('TraveltoGoal action not available, waiting...')
         ####################################
         
@@ -62,6 +62,9 @@ def main(args=None):
     cli_obj = TurtleClient()
     cli_obj.get_logger().info('Turtlebot Client Started!')
 
+    # call the action
+    cli_obj.goal_actioncall()
+    
     # this is equal to rclpy.spin(cli_obj)
     while rclpy.ok():
         rclpy.spin_once(cli_obj)

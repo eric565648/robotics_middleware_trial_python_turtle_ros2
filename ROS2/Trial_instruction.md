@@ -568,3 +568,156 @@ You should see in the terminal saying the color has changed to cyan.
 
 ## ROS2 Action (Server-Client)
 **Starting Point of Checkpoint 7**
+
+**ROS2 Action** is a new communication type in ROS2 that does not exist in ROS1. We can know from the name that it will be pretty helpful if we will like to activate an action on a robot. Actions are built on service and topic. It's similar to service with also one server and one to multiple clients which can call the service. The action client will send an action goal to the action server which send a series of feedback messages during execution and a result after the action. Actions are preemptable which means you can stop them any time you want. 
+
+In this part, you will first create a action interface which is very much like what we've done in [the previous section](#service-type). We will then add server to our `turtlebot_server.py` and create a script to add the client. The action is the robot travelling to several designated goal. The client send multiple goal pose to the server and the server tell the client which goal is the robot currently heading to and if the action success after all.
+
+## Action Type
+
+First create a folder name `action` in the package `turtle_interfaces`. Create a file name `TurtleToGoals.action` and copy the follow content to the file. The first part of the content is the goal of the action sent from the client to the server. The second part is the result sent from the server to the client after the action. The third part is the feedback message type which is also sent from the server to the client.
+```
+geometry_msgs/Pose[] goal_poses
+---
+int32 ret
+---
+geometry_msgs/Pose mid_goal_pose
+```
+
+As we did in the previous section, open `CMakelist.txt` in the package `turtle_interfaces` and add the following line to the part.
+```
+rosidl_generate_interfaces(${PROJECT_NAME}
+  ...
+  "action/TurtleToGoals.action"
+  DEPENDENCIES geometry_msgs
+)
+```
+
+Great that all! Now build the workspace as we did [before](#build-the-workspace-and-packages). Source the workspace and run the following command to see if the action type was built.
+```
+ros2 interface show turtle_interface/action/TurtleToGoal
+``` 
+
+## Action-Server
+
+Please open the file `turtlebot_server.py`. As this point we are very familiar to the structure of the code. Let's head to the constructor and see how we add a action server. Please uncomment the following line. You can see that the object initialization is slightly different as we did for service, however, it's still quite straightforward. Please add action type (which we just created), action name and action callback. 
+```
+#### action server ####
+self.action_server = ActionServer(self, <action type>, <action name>, <action callback>)
+#######################
+```
+
+Next please uncomment our callback function! The function first stop whatever the turtlebot is doing by setting the velocity to 0. Then the callback message is initialized. A for loop then loops over the goal poses and publish the current goal poses as the feedback message. It also publish the turtlebot state. Finally it report success and return a result as we did for service server.
+```
+def travel_to_goals_cb(self, goal_handle):
+    self.get_logger().info('To goals')
+
+    self.vel_x = 0
+    self.ang_vel = 0
+
+    feedback_msg = TurtleToGoals.Feedback()
+
+    for goal in goal_handle.request.goal_poses:
+        feedback_msg.mid_goal_pose = goal
+        goal_handle.publish_feedback(feedback_msg)
+
+        self.turtle.turtle_pose = goal
+        self.turtle_pub.publish(self.turtle)
+        time.sleep(2)
+
+    goal_handle.succeed()
+
+    result = TurtleToGoals.Result()
+    result.ret = 1
+    return result
+```
+
+## Action-Client
+
+Please copy the file `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/action_client.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/action_client.py`. It share a similar code structure as `server_client.py`. The main function pretty much to the same thing (i.e. create node object, call the action, call rclpy.spin). Let's head to the constructor of the class.
+
+As easy as it said, the constructor create an action client. Please fill up the type and the name of the action.
+```
+#### Action client ####
+self.action_cli = ActionClient(self, <action type>, <action name>)
+while not self.action_cli.wait_for_service(timeout_sec=1.0):
+    self.get_logger().info('TraveltoGoal action not available, waiting...')
+####################################
+```
+
+Next, let's see the actino call function. The function first creates a goal object and stacks in 5 random goal poses. Then the action is called asynchronizely with a feedback callback function. Finally a response call back function is added.
+```
+def goal_actioncall(self):
+        
+    goal_msg = TurtleToGoals.Goal()
+    for i in range(5):
+        goal = Pose()
+        goal.position.x = float(random.randint(-1*self.screen.window_width()/2+20,self.screen.window_width()/2-20))
+        goal.position.y = float(random.randint(-1*self.screen.window_height()/2+20,self.screen.window_height()/2-20))
+
+        goal_msg.goal_poses.append(goal)
+    
+    self.action_response_future = self.action_cli.send_goal_async(goal_msg, feedback_callback=self.goal_feedback_cb)
+    self.action_response_future.add_done_callback(self.goal_response_cb)
+```
+
+Let's see the response callback function. The response callback function will response once the action server have the action call (as opposed to result callback which is call after the action is executed.) The function basically show if the goal is accepted or rejected. Then a result callback function is added.
+```
+def goal_response_cb(self, future):
+
+    goal_handle = future.result()
+    if not goal_handle.accepted:
+        self.get_logger().info('Goal Rejected')
+        return
+    
+    self.get_logger().info('Goal accepted')
+
+    self.action_result_future = goal_handle.get_result_async()
+    self.action_result_future.add_done_callback(self.goal_result_callback)
+```
+
+In the result callback function, it shows the result of the action.
+```
+def goal_result_callback(self, future):
+    result = future.result().result
+    self.get_logger().info('Goal Travel Done! Result:%d' % (result.ret))
+```
+
+Finally, let's see the feedback callback function. The feedback function is called every time a feedback message is sent. Here it shows the current goal heading to.
+```
+def goal_feedback_cb(self, feedback_msg):
+    feedback = feedback_msg.feedback
+    mid_goal = feedback.mid_goal_pose
+    self.get_logger().info('Traveling to x:%d, y:%d' % (mid_goal.position.x, mid_goal.position.y))
+```
+
+## Dependencies and Entry Point and Build
+
+Remeber to add dependencies, entry point and build your package!!!!
+
+As we have already add dependencies in the previous chapter, we only need to add entry point in `setup.py` here. Please add the following line
+```
+'action_client = python_turtle.action_client:main',
+```
+
+Finally, build the workspace as we have mentioned in [this section](#build-the-workspace-and-packages). You have to build the workspace **even you only make changes in python scripts**
+
+* **Checkpoint 7**:
+
+Run the server script and client scripts. Open two terminals. In one terminal, source the workspace and run the following
+```
+$ ros2 run python_turtle turtle_server
+```
+Another terminal
+```
+$ ros2 run python_turtle service_client
+```
+
+You should see in the terminal that it's traveling to different goal pose.
+
+# Task
+## 3
+
+**Checkpoint 8**
+
+Now, the final checkpoint have come. You go through all essential part of ROS2. Please integrate the `Example/keyboard.py` to your `turtlebot_client.py`. When the `s` key is pressed, use the service call to change the color of the turtle. When the `a` key is pressed, use the action call to let the turtlebot travel to 5 different goal points. Use what you've learn, the code and have fun!
