@@ -47,8 +47,8 @@ For each ROS2 project, there's a dedicated workspace. Unlike in ROS1 we use `cat
 Like ROS1 (and unlike RobotRaconteur), ROS2 requires the workspace to build content. All package should be in `workspace/src` folder. In this repository there's already a webcam package (`~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/webcam`), so you'll need to [create another package](https://docs.ros.org/en/foxy/Tutorials/Creating-Your-First-ROS2-Package.html) for python turtle.
 
 ```
-cd ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src
-ros2 pkg create --build-type ament_python python_turtle
+$ cd ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src
+$ ros2 pkg create --build-type ament_python python_turtle
 ```
 
 This creates a new package `python_turtle` under `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src`.
@@ -61,8 +61,8 @@ ROS2 shares the same pre-defined message types (e.g. std_msgs, sensor_msgs) with
 
 Let's create our own message type `turtle_msg`! We first create a new package `turtle_interfaces`.
 ```
-cd ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src
-ros2 pkg create --build-type ament_cmake turtle_interfaces
+$ cd ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src
+$ ros2 pkg create --build-type ament_cmake turtle_interfaces
 ```
 
 Create a folder name `msg` under your package folder `turtle_interfaces`. Then create a file named `Turtlemsg.msg` and copy paste the below content. The message include the name, the pose of the turtle and the color of the turtle.
@@ -145,20 +145,20 @@ We'll get to how to use these services and messages in the later checkpoints.
 We use `colcon build` to build the packages. Remeber to setup the ROS2 environment whenever a new terminal is open.
 
 ```
-source /opt/ros/foxy/setup.bash
-cd ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws
-colcon build
+$ source /opt/ros/foxy/setup.bash
+$ cd ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws
+$ colcon build
 ```
 
 You should see `Summary: X packages finished` where `X` is the number of your packages in the workspace. Three folders `build/` `install/` and `log/` were generated. Remeber to setup the workspace if you want to use packages in the workspace.
 
 ```
-source ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/install/setup.bash
+$ source ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/install/setup.bash
 ```
 
 You can also add the command to your bash script so everytime a new terminal is open, the workspace environment is setup.
 ```
-echo 'source ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/install/setup.bash' >> ~/.bashrc 
+$ echo 'source ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/install/setup.bash' >> ~/.bashrc 
 ```
 
 * **Checkpoint 1**: 
@@ -214,9 +214,9 @@ self.timer = self.create_timer(0.03, self.capture_frame)
 Finally, in the `capture_frame` function, images are read from the webcam. Whenever a image is read, the publisher will publisher it (to the topic name `image_raw`).
 ```
 rval,img_data = self.camera.read()
-  if rval:
-      self.img_publisher.publish(self.bridge.cv2_to_imgmsg(img_data, "bgr8"))
-      return img_data 
+if rval:
+    self.img_publisher.publish(self.bridge.cv2_to_imgmsg(img_data, "bgr8"))
+    return img_data 
 ```
 
 ### Subscriber
@@ -609,7 +609,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 Great that all! Now build the workspace as we did [before](#build-the-workspace-and-packages). Source the workspace and run the following command to see if the action type was built.
 ```
-ros2 interface show turtle_interface/action/TurtleToGoal
+$ ros2 interface show turtle_interface/action/TurtleToGoal
 ``` 
 
 ### Action-Server

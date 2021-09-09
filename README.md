@@ -206,6 +206,13 @@ for i in idx:
 ## Trial Instruction:
 * ROS2 (https://github.com/eric565648/robotics_middleware_trial_python_turtle_ros2/blob/main/ROS2/Trial_instruction.md)
 
-The final goal is to integrate those standalone python examples with ROS/RR, such that the python turtle will be able to drive based on what webcam sees.
+The final goal is to integrate those standalone python examples with ROS2, such that the python turtle will be able to drive based on what webcam sees.
 
 ![](color_code.gif)
+
+## Reference
+
+1. Docker Official Website [link](https://www.docker.com/)
+2. ROS2 Foxy Documentation [link](https://docs.ros.org/en/foxy/index.html)
+3. ROS Official Website [link](https://www.ros.org/)
+4. ROS/RR Trial [link](https://github.com/robotraconteur-contrib/Robotics_Middleware_Trial_Python_Turtle)
