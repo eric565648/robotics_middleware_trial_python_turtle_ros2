@@ -12,7 +12,7 @@ class WebcamSub(Node):
         self.bridge = CvBridge()
 
         # define subscriber
-        self.img_subscription = self.create_subscription(Image, 'image_raw', self.img_callback, 1)
+        self.img_subscription = self.create_subscription(Image, 'image_raw', self.img_callback, 5)
         self.img_subscription # prevent unused varaibale warning
 
     def img_callback(self, img_msg):
@@ -27,8 +27,7 @@ class WebcamSub(Node):
         cv2.namedWindow("Image")
         if cv_image is not None:
             cv2.imshow("Image", cv_image)
-        if cv2.waitKey(50)==-1:
-            cv2.destroyAllWindows()
+        cv2.waitKey(1)
 
 def main(args=None):
 
