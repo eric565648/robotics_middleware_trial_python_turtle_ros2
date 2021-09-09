@@ -27,8 +27,7 @@ class WebcamSub(Node):
         cv2.namedWindow("Image")
         if cv_image is not None:
             cv2.imshow("Image", cv_image)
-        if cv2.waitKey(50)==-1:
-            cv2.destroyAllWindows()
+        cv2.waitKey(1)
 
 def main(args=None):
 
