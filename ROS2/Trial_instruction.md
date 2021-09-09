@@ -735,3 +735,5 @@ You should see in the terminal that it's traveling to different goal pose.
 **Checkpoint 8**
 
 Now, the final checkpoint have come. You go through all essential part of ROS2. Please integrate the `Example/keyboard.py` to your `turtlebot_client.py`. When the `s` key is pressed, use the service call to change the color of the turtle. When the `a` key is pressed, use the action call to let the turtlebot travel to 5 different goal points. Use what you've learn, the code and have fun!
+
+![](task3.gif)
