@@ -17,7 +17,7 @@ class TurtleClient(Node):
 
         #### Display/Turtle Setup ####
         self.screen = turtle.Screen()
-        self.screen.bgcolor('darkblue')
+        self.screen.bgcolor('lightblue')
         self.turtle_display = turtle.Turtle()
         self.turtle_display.shape("turtle")
         self.turtle = TurtleMsg()
@@ -35,7 +35,7 @@ class TurtleClient(Node):
 
     def update(self):
 
-        if self.turtle.color is 'None':
+        if self.turtle.color == 'None':
             self.turtle_display.penup()
         else:
             self.turtle_display.pencolor(self.turtle.color)
@@ -96,8 +96,8 @@ def main(args=None):
         cli_obj.update()
         rclpy.spin_once(cli_obj)
 
-        unit_x = <put how many unit you like>
-        unit_z = <put how many unit you like>
+        unit_x = <put a reasonable ratio, 1 is a good number, around 1 is good enough>
+        unit_z = <put a reasonable ratio, 1 is a good number, around 1 is good enough>
         
         #### publish twist ####
         cmd_msg = Twist()

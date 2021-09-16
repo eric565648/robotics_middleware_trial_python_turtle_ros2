@@ -42,6 +42,11 @@ If you are further interested in how the container is actually fired up and/or j
 * OpenCV (`pip3 install opencv-python --user`)
 * git (`sudo apt-get install git`)
 * [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html) (Follow instruction to download)
+* [Colcon](https://docs.ros.org/en/foxy/Tutorials/Colcon-Tutorial.html#install-colcon), simply run the command
+```
+sudo apt install python3-colcon-common-extensions
+
+```
 
 ## Question Post:
 During the trial process, if you encounter questions specific about this trial, feel free to ask in the workspace. For questions about ROS2, please go to http://wiki.ros.org/answers.ros.org. Please include the following while posting your questions:

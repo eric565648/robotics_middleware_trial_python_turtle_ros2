@@ -165,9 +165,9 @@ $ echo 'source ~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/instal
 Try the following commands and you'll see the defined message and services.
 
 ```
-ros2 interface show turtle_interface/msg/Turtlemsg
-ros2 interface show turtle_interfaces/srv/Setpose
-ros2 interface show turtle_interfaces/srv/Setcolor
+ros2 interfaces show turtle_interface/msg/Turtlemsg
+ros2 interfaces show turtle_interfaces/srv/Setpose
+ros2 interfaces show turtle_interfaces/srv/Setcolor
 ```
 
 Please direct to [Readme](https://github.com/eric565648/robotics_middleware_trial_python_turtle_ros2) for question post.
@@ -356,7 +356,7 @@ def driving_timer_cb(self):
 
 We have finished `turtle_server.py`. Let's move on to turtle client. Please copy the file `~/robotics_middleware_trial_python_turtle_ros2/ROS2/templates/turtlebot_client.py` to `~/robotics_middleware_trial_python_turtle_ros2/ROS2/dev_ws/src/python_turtle/python_turtle/turtlebot_client.py`. And let's see the main function!.
 
-As we did in `turtle_server.py`, we also initialize ROS2 and a object for the node. The difference is that instead of `rclpy.spin('the object')`, we have a while loop here with a `rclpy.spin_once('the object')`. You can see these two as equivelent but we can add some steps here before and after each spin. The while loop first call the update function of the object, then spin the object node. Finally using the publisher of the object to publish a Twist message. You can see the twist has linear velocity in x-direction and angular velocity in z-direction. (Think about the callback function in `turtle_server.py`). We can guess that the motion of the turtlebot might be a circle if the twist does not change during the time. Please put the unit of linear and angular velocity you like. Depends on the amount and ratio between them, the turtle might move quicker or slower, the circle might get larger or smaller.
+As we did in `turtle_server.py`, we also initialize ROS2 and a object for the node. The difference is that instead of `rclpy.spin('the object')`, we have a while loop here with a `rclpy.spin_once('the object')`. You can see these two as equivelent but we can add some steps here before and after each spin. The while loop first call the update function of the object, then spin the object node. Finally using the publisher of the object to publish a Twist message. You can see the twist has linear velocity in x-direction and angular velocity in z-direction. (Think about the callback function in `turtle_server.py`). We can guess that the motion of the turtlebot might be a circle if the twist does not change during the time. Please put the unit of linear and angular velocity you like. We recommend to put numbers around 1 and not too large. Depends on the amount and ratio between them, the turtle might move quicker or slower, the circle might get larger or smaller.
 ```
 def main(args=None):
 
@@ -372,8 +372,8 @@ def main(args=None):
         cli_obj.update()
         rclpy.spin_once(cli_obj)
 
-        unit_x = <put how many unit you like>
-        unit_z = <put how many unit you like>
+        unit_x = <put a reasonable ratio, 1 is a good number, around 1 is good enough>
+        unit_z = <put a reasonable ratio, 1 is a good number, around 1 is good enough>
         
         #### publish twist ####
         cmd_msg = Twist()
@@ -408,7 +408,7 @@ Last, the `update` function, we found it call every time in the while loop. The 
 ```
 def update(self):
 
-    if self.turtle.color is 'None':
+    if self.turtle.color == 'None':
         self.turtle_display.penup()
     else:
         self.turtle_display.pencolor(self.turtle.color)
@@ -444,11 +444,11 @@ Finally, build the workspace as we have mentioned in [this section](#build-the-w
 
 Run the server script and client scripts. Open two terminals. In one terminal, source the workspace and run the following
 ```
-$ ros2 run python_turtle turtle_server
+$ ros2 run python_turtle turtlebot_server
 ```
 Another terminal
 ```
-$ ros2 run python_turtle turtle_client
+$ ros2 run python_turtle turtlebot_client
 ```
 
 You should see a turtlebot circling!
@@ -571,7 +571,7 @@ Finally, build the workspace as we have mentioned in [this section](#build-the-w
 
 Run the server script and client scripts. Open two terminals. In one terminal, source the workspace and run the following
 ```
-$ ros2 run python_turtle turtle_server
+$ ros2 run python_turtle turtlebot_server
 ```
 Another terminal
 ```
@@ -609,7 +609,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 Great that all! Now build the workspace as we did [before](#build-the-workspace-and-packages). Source the workspace and run the following command to see if the action type was built.
 ```
-$ ros2 interface show turtle_interface/action/TurtleToGoal
+$ ros2 interfaces show turtle_interface/action/TurtleToGoal
 ``` 
 
 ### Action-Server
@@ -720,7 +720,7 @@ Finally, build the workspace as we have mentioned in [this section](#build-the-w
 
 Run the server script and client scripts. Open two terminals. In one terminal, source the workspace and run the following
 ```
-$ ros2 run python_turtle turtle_server
+$ ros2 run python_turtle turtlebot_server
 ```
 Another terminal
 ```

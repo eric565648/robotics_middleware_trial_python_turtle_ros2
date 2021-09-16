@@ -1,5 +1,0 @@
-geometry_msgs/Pose[] goal_poses
----
-int32 ret
----
-geometry_msgs/Pose mid_goal_pose
