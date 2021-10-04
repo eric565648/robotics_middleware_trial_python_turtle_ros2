@@ -18,6 +18,34 @@ from turtle_interfaces.srv import SetColor, SetPose
 from turtle_interfaces.msg import TurtleMsg
 from turtle_interfaces.action import TurtleToGoals
 
+from scipy.io import savemat
+
+def imgmsg_to_cv2(img_msg):
+    if img_msg.encoding != "bgr8":
+        print("This Coral detect node has been hardcoded to the 'bgr8' encoding.  Come change the code if you're actually trying to implement a new camera")
+    
+    dtype = np.dtype("uint8") # Hardcode to 8 bits...
+    dtype = dtype.newbyteorder('>' if img_msg.is_bigendian else '<')
+    image_opencv = np.ndarray(shape=(img_msg.height, img_msg.width, 3), # and three channels of data. Since OpenCV works with bgr natively, we don't need to reorder the channels.
+                    dtype=dtype, buffer=img_msg.data)
+    
+    # If the byt order is different between the message and the system.
+    if img_msg.is_bigendian == (sys.byteorder == 'little'):
+        image_opencv = image_opencv.byteswap().newbyteorder()
+    
+    return image_opencv
+
+def cv2_to_imgmsg(cv_image):
+    
+    img_msg = Image()
+    img_msg.height = cv_image.shape[0]
+    img_msg.width = cv_image.shape[1]
+    img_msg.encoding = "bgr8"
+    img_msg.is_bigendian = 0
+    img_msg.data = cv_image.tostring()
+    img_msg.step = len(img_msg.data) // img_msg.height # That double line is actually integer division, not a comment
+    return img_msg
+
 class TurtleClient(Node):
     def __init__(self):
         super().__init__('turtlebot_client')
@@ -58,6 +86,10 @@ class TurtleClient(Node):
 
         #### subscribing turtlebot state ####
         self.turtle_sub = self.create_subscription(TurtleMsg, 'turtle_state', self.turtle_callback, 1)
+
+        #### time analysis statistic ####
+        self.msg_duration = np.array([])
+        self.cv_duration = np.array([])
 
     def color_srvcall(self):
 
@@ -116,11 +148,17 @@ class TurtleClient(Node):
     
     def img_callback(self, msg_img):
 
+        get_time = float(self.get_clock().now().nanoseconds)*1e-9
+        msg_time = float(rclpy.time.Time.from_msg(msg_img.header.stamp).nanoseconds)*1e-9
+        self.msg_duration = np.append(self.msg_duration, get_time-msg_time)
+
         try:
             cv_image = self.cv_bridge.imgmsg_to_cv2(msg_img, 'bgr8')
+            # cv_image = imgmsg_to_cv2(msg_img)
         except CvBridgeError as e:
             self.get_logger().info(e)
         
+        cv_time_s = float(self.get_clock().now().nanoseconds)*1e-9
         image_size=len(cv_image)*len(cv_image[0]) #get image size
         image_dimension=np.array([len(cv_image),len(cv_image[0])])    #get image dimension
 
@@ -149,15 +187,15 @@ class TurtleClient(Node):
         
         
         #show filtered image
-        cv2.namedWindow("Image")
-        cv2.imshow("Image",cv_image)
-        cv2.namedWindow("Image Red")
-        cv2.imshow("Image Red",filtered_red)
-        cv2.namedWindow("Image Yellow")
-        cv2.imshow("Image Yellow",filtered_yellow)
-        cv2.namedWindow("Image Blue")
-        cv2.imshow("Image Blue",filtered_blue)
-        cv2.waitKey(1)
+        # cv2.namedWindow("Image")
+        # cv2.imshow("Image",cv_image)
+        # cv2.namedWindow("Image Red")
+        # cv2.imshow("Image Red",filtered_red)
+        # cv2.namedWindow("Image Yellow")
+        # cv2.imshow("Image Yellow",filtered_yellow)
+        # cv2.namedWindow("Image Blue")
+        # cv2.imshow("Image Blue",filtered_blue)
+        # cv2.waitKey(1)
 
         # unit of twist
         unit_x = 0
@@ -187,7 +225,20 @@ class TurtleClient(Node):
             print("yellow detected")
             unit_z += 1
             self.img_control = True
+
+        cv_time_e = float(self.get_clock().now().nanoseconds)*1e-9
+        self.cv_duration = np.append(self.cv_duration, cv_time_e-cv_time_s)
         
+        if len(self.cv_duration) % 100 == 0:
+            print('================')
+            print("Msg duration Ave:",np.mean(self.msg_duration))
+            print("Msg duration Std:",np.std(self.msg_duration))
+            print("CV duration Ave:",np.mean(self.cv_duration))
+            print("CV duration Std:",np.std(self.cv_duration))
+            print("================")
+            mdic = {"msg_ubuntu":self.msg_duration, "cv_ubuntu":self.cv_duration}
+            savemat("duration_ubuntu"+str(len(self.cv_duration))+'.mat', mdic)
+
         msg = Twist()
         msg.linear.x = 50.*unit_x
         msg.angular.z = 1.*unit_z
@@ -195,7 +246,7 @@ class TurtleClient(Node):
 
     def update(self):
 
-        if self.turtle.color is 'None':
+        if self.turtle.color == 'None':
             self.turtle_display.penup()
         else:
             self.turtle_display.pencolor(self.turtle.color)
