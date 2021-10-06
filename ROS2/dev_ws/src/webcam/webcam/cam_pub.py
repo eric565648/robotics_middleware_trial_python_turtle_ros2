@@ -54,7 +54,7 @@ class Webcam_Impl(Node):
 
         rval,img_data = self.camera.read()
         if rval:
-            img_msg = self.bridge.cv2_to_imgmsg(img_data, "bgr8")
+            # img_msg = self.bridge.cv2_to_imgmsg(img_data, "bgr8")
             img_msg = cv2_to_imgmsg(img_data)
             img_msg.header.stamp = self.get_clock().now().to_msg()
             self.img_publisher.publish(img_msg)

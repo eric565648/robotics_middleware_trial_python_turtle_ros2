@@ -4,6 +4,17 @@ from rclpy.action import ActionClient
 import math
 import random
 import turtle
+### for win10 users, please uncomment following ###
+# sys.path.append('C:\\Python38\\python38.zip')
+# sys.path.append('C:\\Python38\\DLLs')
+# sys.path.append('C:\\Python38\\lib')
+# sys.path.append('C:\\Python38')
+# sys.path.append('C:\\Users\\eric5\\AppData\\Roaming\\Python\\Python38\\site-packages')
+# sys.path.append('C:\\Python38\\lib\\site-packages')
+# sys.path.append('C:\\Python38\\lib\\site-packages\\win32')
+# sys.path.append('C:\\Python38\\lib\\site-packages\\win32\\lib')
+# sys.path.append('C:\\Python38\\lib\\site-packages\\Pythonwin')
+################################
 import termios, fcntl, sys, os
 
 import cv2
